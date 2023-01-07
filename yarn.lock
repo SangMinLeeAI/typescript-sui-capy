@@ -1329,6 +1329,7 @@ __metadata:
     "@types/node": ^18.11.18
     ts-node: ^10.9.1
     typescript: ^4.9.4
+    yarn-upgrade-all: ^0.7.1
   languageName: unknown
   linkType: soft
 
@@ -1481,6 +1482,15 @@ __metadata:
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
   checksum: 343617202af32df2a15a3be36a5a8c0c8545208f3d3dfbc6bb7c3e3b7e8c6f8e7485432e4f3b88da3031a6e20afa7c711eded32ddfb122896ac5d914e75848d5
+  languageName: node
+  linkType: hard
+
+"yarn-upgrade-all@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "yarn-upgrade-all@npm:0.7.1"
+  bin:
+    yarn-upgrade-all: build/index.js
+  checksum: 87168957082306d51825ccfc84fda9d4022e3b522aa4cee7730abc8675980612a36aba0f9516b32f660dcde7e15e8961bd9de14924e29cd01e2b8e7c2bcf5176
   languageName: node
   linkType: hard
 

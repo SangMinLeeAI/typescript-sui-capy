@@ -31,7 +31,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@mysten/sui.js", "npm:0.21.0"],\
             ["@types/node", "npm:18.11.18"],\
             ["ts-node", "virtual:7066204f87d2f17950378853cca1e950d626f9197eaf02ab49959d161a0505cadca2b24c1e7209af2137e0ff6abc31e1c2f34e3c954817fa55b5a6e6abd9b549#npm:10.9.1"],\
-            ["typescript", "patch:typescript@npm%3A4.9.4#~builtin<compat/typescript>::version=4.9.4&hash=ad5954"]\
+            ["typescript", "patch:typescript@npm%3A4.9.4#~builtin<compat/typescript>::version=4.9.4&hash=ad5954"],\
+            ["yarn-upgrade-all", "npm:0.7.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1592,7 +1593,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@mysten/sui.js", "npm:0.21.0"],\
             ["@types/node", "npm:18.11.18"],\
             ["ts-node", "virtual:7066204f87d2f17950378853cca1e950d626f9197eaf02ab49959d161a0505cadca2b24c1e7209af2137e0ff6abc31e1c2f34e3c954817fa55b5a6e6abd9b549#npm:10.9.1"],\
-            ["typescript", "patch:typescript@npm%3A4.9.4#~builtin<compat/typescript>::version=4.9.4&hash=ad5954"]\
+            ["typescript", "patch:typescript@npm%3A4.9.4#~builtin<compat/typescript>::version=4.9.4&hash=ad5954"],\
+            ["yarn-upgrade-all", "npm:0.7.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1759,6 +1761,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/yallist-npm-4.0.0-b493d9e907-343617202a.zip/node_modules/yallist/",\
           "packageDependencies": [\
             ["yallist", "npm:4.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["yarn-upgrade-all", [\
+        ["npm:0.7.1", {\
+          "packageLocation": "./.yarn/cache/yarn-upgrade-all-npm-0.7.1-a7b05fc6f6-8716895708.zip/node_modules/yarn-upgrade-all/",\
+          "packageDependencies": [\
+            ["yarn-upgrade-all", "npm:0.7.1"]\
           ],\
           "linkType": "HARD"\
         }]\
