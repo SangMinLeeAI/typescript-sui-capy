@@ -1,15 +1,28 @@
 import { JsonRpcProvider, Network, Ed25519Keypair, RawSigner } from '@mysten/sui.js';
-async function main() {
+import xlsx from 'xlsx';
+import fs from 'fs';
+
+// const content = 'Hello World'
+
+// fs.writeFile('/tmp/test.txt', content, { flag: 'a+' }, (err: any) => {
+//     if (err) {
+//         console.error(err)
+//         return
+//     }
+//     //file written successfully
+// })
+
+async function main(): Promise<void> {
     console.log("Hello, world");
     let gasObjects;
     const provider = new JsonRpcProvider(Network.DEVNET);
     const capyPackageID = '0x30136e80e16ac92ff33a0ac2d67c64dc129eb0bc'
     const itemMarket = '0x3c4706fd9deec1674137d92c1a2296001489fa46'
     const typeArgumentForAddItem = '0x30136e80e16ac92ff33a0ac2d67c64dc129eb0bc::capy_item::CapyItem'
-    const itemOnHead: string[] = ['holiday hat','astro hat','cowboy hat','sui cap']
-    const itemOnBody: string[] = ['holiday coat','astro suit','cowboy shirt']
-    const itemOnLegs: string[] = ['holiday skis','astro boots','cowboy pants']
-    const itemOnNeck: string[] = ['holiday scarf','pearls','wild Rag']
+    const itemOnHead: string[] = ['holiday hat', 'astro hat', 'cowboy hat', 'sui cap']
+    const itemOnBody: string[] = ['holiday coat', 'astro suit', 'cowboy shirt']
+    const itemOnLegs: string[] = ['holiday skis', 'astro boots', 'cowboy pants']
+    const itemOnNeck: string[] = ['holiday scarf', 'pearls', 'wild rag']
 
 
     const TEST_MNEMONICS = "impact pizza drum shiver ready sense retire fluid upper liquid medal degree"
@@ -34,12 +47,74 @@ async function main() {
     // await openPremiumBox();
     // await buyItem();
     // await addItem();
-    const walletSigner = await getSignerFromMnemonics(TEST_MNEMONICS); 
-    const walletAddress = await walletSigner.getAddress();
-    // const payCoin = await makeoneCoin(walletSigner, walletAddress);
-    // getAirDrop(walletAddress);
-    // await buyItem(walletSigner,payCoin);
-    await addItem(walletSigner,walletAddress);
+    // await singleCycle(
+    //     'blush cupboard canal spider bracket expose radar almost success obey present immense',
+    //     'project arrest achieve because patch distance rapid torch record test select absorb'
+    // );
+    await timeAirDrop('src/seed_tweet.xlsx');
+    async function singleCycle(mnemonic: string, recipMnemonic: string): Promise<void> {
+
+        //setting for start
+        //signer ready
+        const walletSigner = await getSignerFromMnemonics(mnemonic);
+        const walletAddress = await walletSigner.getAddress();
+
+        //recip signer ready
+
+        const recipWalletSigner = await getSignerFromMnemonics(recipMnemonic);
+        let recipWalletAddress = await recipWalletSigner.getAddress();
+        recipWalletAddress = `0x${recipWalletAddress}`;
+
+        // //get airdrop and merger coin First
+        // await getAirDrop(walletAddress);
+        // let flag = 0;
+        // while(flag===0){
+        //     let dropResult = await provider.getObjectsOwnedByAddress(walletAddress);
+        //     if(dropResult.length != 0){
+        //         flag = 1;
+        //     };
+        // };
+        let payCoin = await makeoneCoin(walletSigner, walletAddress);
+
+        //buy 3 box
+        // await capyBoxMint(walletSigner, Math.floor(Math.random() * (6 - 1 + 1)) + 1, payCoin);
+        // await capyBoxMint(walletSigner, Math.floor(Math.random() * (6 - 1 + 1)) + 1, payCoin);
+        // await capyBoxMint(walletSigner, Math.floor(Math.random() * (6 - 1 + 1)) + 1, payCoin);
+
+
+        //send box to recip
+        await sendBoxBatch(walletSigner, payCoin, recipWalletAddress, walletAddress);
+
+        //get airdrop and merger coin Second
+        // await getAirDrop(walletAddress);
+        // payCoin = await makeoneCoin(walletSigner, walletAddress);
+
+        //premium box
+        await mintPremiumBox(walletSigner, payCoin, walletAddress);
+        await openPremiumBox(walletSigner, walletAddress);
+
+        //get airdrop and merger coin Third
+        // await getAirDrop(walletAddress);
+        // payCoin = await makeoneCoin(walletSigner, walletAddress);
+
+        //item
+        await buyItem(walletSigner, payCoin);
+        await addItem(walletSigner, walletAddress);
+
+    }
+
+    // async function batchTranjection(startIdx: number, endIdx: number, filePath: string) {
+    //     const mnemonics = await mnemonicsFromExcel;
+
+    // }
+
+    async function mnemonicsFromExcel(filePath: string) {
+        const excelFile = xlsx.readFile(filePath);
+        const sheetName = excelFile.SheetNames[0];          // @details 첫번째 시트 정보 추출
+        const firstSheet = excelFile.Sheets[sheetName];       // @details 시트의 제목 추출
+        const jsonData = xlsx.utils.sheet_to_json(firstSheet, { defval: "" });
+        return jsonData;
+    }
 
     async function getSignerFromMnemonics(mnemonics: string): Promise<RawSigner> {
         return new RawSigner(
@@ -48,7 +123,7 @@ async function main() {
         );
     }
 
-    async function addItem(signer: RawSigner,address: string) {
+    async function addItem(signer: RawSigner, address: string) {
         const finalGasObjects = await provider.getObjectsOwnedByAddress(address);
         console.log("🚀 ----------------------------------------------------------------🚀")
         console.log("🚀 ~ file: app.ts:53 ~ addItem ~ finalGasObjects", finalGasObjects)
@@ -57,7 +132,7 @@ async function main() {
         const itemObjects = finalGasObjects.filter(e => e.type === '0x30136e80e16ac92ff33a0ac2d67c64dc129eb0bc::capy_item::CapyItem');
 
 
-        for (const itemObject of itemObjects){
+        for (const itemObject of itemObjects) {
             let addItemResult = await signer.executeMoveCall({
                 packageObjectId: capyPackageID,
                 module: 'capy',
@@ -74,9 +149,9 @@ async function main() {
             console.log("🚀 ~ file: app.ts:63 ~ addItem ~ addItemResult", addItemResult);
             console.log("🚀 ------------------------------------------------------------🚀");
         }
-        
+
     }
-    
+
     async function buyItem(signer: RawSigner, coinForPay: string) {
         console.log("============================Buy Item========================");
         const buyHead = await buyPartItem(signer, coinForPay, itemOnHead);
@@ -96,7 +171,7 @@ async function main() {
         console.log("🚀 ~ file: app.ts:60 ~ buyItem ~ buyLegs", buyLegs)
         console.log("🚀 ------------------------------------------------🚀")
         console.log("============================Buy Item========================");
-        
+
     }
 
     async function buyPartItem(signer: RawSigner, coinForPay: string, partItemList: string[]) {
@@ -115,7 +190,7 @@ async function main() {
         });
     }
 
-    async function openPremiumBox(signer: RawSigner,address: string) {
+    async function openPremiumBox(signer: RawSigner, address: string) {
         console.log("============================open Premium Box========================");
         let premiumBox = await provider.getObjectsOwnedByAddress(address);
         premiumBox = premiumBox.filter(e => {
@@ -127,22 +202,22 @@ async function main() {
             module: 'capy_winter',
             function: 'open_premium',
 
-            arguments:[
+            arguments: [
                 '0xaf10a1ce520026234ad8c89080a43b28cb170553',
                 premiumBox[0].objectId,
             ],
             typeArguments: [],
-            gasBudget:4000,
-            
+            gasBudget: 4000,
+
         })
         console.log("🚀 ---------------------------------------------------------------🚀");
         console.log("🚀 ~ file: app.ts:59 ~ openPremiumBox ~ openPremium", openPremium);
         console.log("🚀 ---------------------------------------------------------------🚀");
-        
+
     }
 
 
-    async function mintPremiumBox(signer: RawSigner, coinForPay: string,address: string) {
+    async function mintPremiumBox(signer: RawSigner, coinForPay: string, address: string) {
         console.log("===================Premium box============================")
         let premiumTicket = await provider.getObjectsOwnedByAddress(
             address
@@ -169,8 +244,8 @@ async function main() {
     }
 
 
-    async function sendBox(signer: RawSigner,boxID: string, recipID: string) {
-        await signer.executeMoveCall({
+    async function sendBox(signer: RawSigner, boxID: string, recipID: string) {
+        return await signer.executeMoveCall({
             packageObjectId: '0x30136e80e16ac92ff33a0ac2d67c64dc129eb0bc',
             module: 'capy_winter',
             function: 'send_gift',
@@ -194,16 +269,16 @@ async function main() {
         console.log("🚀 ~ file: app.ts:31 ~ sendBox ~ boxObjects", boxObjects);
 
         boxObjects = boxObjects.filter(e => e.type === "0x30136e80e16ac92ff33a0ac2d67c64dc129eb0bc::capy_winter::GiftBox");
-        for (const boxObject of boxObjects){
-           let sendBoxReult =  await sendBox(signer, boxObject.objectId, recipID);
-           console.log("🚀 ----------------------------------------------------------------🚀")
-           console.log("🚀 ~ file: app.ts:189 ~ sendBoxBatch ~ sendBoxReult", sendBoxReult)
-           console.log("🚀 ----------------------------------------------------------------🚀")
-           
+        for (const boxObject of boxObjects) {
+            let sendBoxReult = await sendBox(signer, boxObject.objectId, recipID);
+            console.log("🚀 ----------------------------------------------------------------🚀")
+            console.log("🚀 ~ file: app.ts:189 ~ sendBoxBatch ~ sendBoxReult", sendBoxReult)
+            console.log("🚀 ----------------------------------------------------------------🚀")
+
         }
 
         console.log("++++++++++++++++++++send Box Batch+++++++++++++++++++++++++++++++");
-        
+
     }
 
 
@@ -238,7 +313,7 @@ async function main() {
     }
 
 
-    async function capyBoxMint(signer: RawSigner, boxNumber:number, coinForPay: string) {
+    async function capyBoxMint(signer: RawSigner, boxNumber: number, coinForPay: string) {
         const capyBox = await signer.executeMoveCall({
             packageObjectId: '0x30136e80e16ac92ff33a0ac2d67c64dc129eb0bc',
             module: 'capy_winter',
@@ -257,11 +332,46 @@ async function main() {
     }
 
     async function getAirDrop(address: string) {
+
         const airdrop = await provider.requestSuiFromFaucet(
-            address
+            address, {}
         );
         console.log("airdrop", airdrop);
 
+    }
+
+    function delay(ms: number) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
+    }
+
+    async function timeAirDrop(path: string) {
+        const data: any = await mnemonicsFromExcel(path);
+        for(let mnemoic of data){
+            let mSign = await getSignerFromMnemonics(mnemoic.Column1);
+            let add = await mSign.getAddress();
+            try {
+                let results = await getAirDrop(add);
+                console.log("🚀 -----------------------------------------------------🚀");
+                console.log("🚀 ~ file: app.ts:355 ~ timeAirDrop ~ results", results);
+                console.log("🚀 -----------------------------------------------------🚀");
+            } catch (error) {
+                console.log(error);
+                console.log("🚀 ---------------------------------------------🚀");
+                console.log("🚀 ~ file: app.ts:355 ~ timeAirDrop ~ add", add);
+                console.log("🚀 ~ file: app.ts:355 ~ timeAirDrop ~ mnimonic", mnemoic.Column1);
+                fs.writeFile('./test.txt', mnemoic.Column1, { flag: 'a+' }, (err: any) => {
+                        if (err) {
+                            console.error(err)
+                            return
+                        }
+                        //file written successfully
+                    })
+
+                console.log("🚀 ---------------------------------------------🚀");
+            }
+            await delay(100000);
+        }
+        
     }
 }
 
